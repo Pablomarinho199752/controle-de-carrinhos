@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Controle de Carrinhos</title>
+<meta name="description" content="Controle da portaria — registre a saída de carrinhos e acompanhe até a devolução." />
+<meta name="theme-color" content="#10273A" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icons/favicon.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root{
+    --navy:#10273A;
+    --navy-2:#16344B;
+    --orange:#E08D3C;
+    --bg:#F1F4F7;
+    --card:#FFFFFF;
+    --border:#E3E8ED;
+    --text:#12293D;
+    --muted:#66788A;
+    --muted-2:#8B9AA8;
+    --green:#2F9E5C;
+    --green-bg:#E9F7EF;
+    --radius-lg:18px;
+    --radius-md:14px;
+    --radius-sm:10px;
+    box-sizing:border-box;
+  }
+  *,*::before,*::after{box-sizing:inherit;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    padding-top:env(safe-area-inset-top,0px);
+    padding-bottom:env(safe-area-inset-bottom,0px);
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding-bottom:40px;}
+
+  /* Header */
+  header.app-header{
+    background:var(--navy);
+    color:#fff;
+    padding:18px 20px calc(18px);
+    padding-top:calc(18px + env(safe-area-inset-top,0px));
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-icon{
+    width:52px;height:52px;border-radius:14px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.12);
+    display:flex;align-items:center;justify-content:center;
+    flex:none;
+  }
+  .brand-icon svg{width:28px;height:28px;}
+  .brand-title{font-size:19px;font-weight:700;line-height:1.2;}
+  .brand-sub{font-size:11.5px;letter-spacing:1.2px;color:#9FB2C2;font-weight:600;margin-top:2px;}
+  .install-btn{
+    width:44px;height:44px;border-radius:12px;
+    background:rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.18);
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;flex:none;cursor:pointer;
+  }
+  .install-btn svg{width:20px;height:20px;}
+
+  main{padding:22px 18px 0;}
+
+  .eyebrow{
+    font-size:11.5px;font-weight:700;letter-spacing:1.4px;color:var(--muted);
+    margin-bottom:8px;
+  }
+  h1.hero{font-size:29px;line-height:1.18;margin:0 0 8px;font-weight:800;color:var(--navy);}
+  p.hero-sub{margin:0 0 20px;color:var(--muted);font-size:15.5px;}
+
+  .stat-row{display:flex;gap:12px;margin-bottom:14px;}
+  .stat-card{
+    flex:1;background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:16px 16px 14px;
+  }
+  .stat-card.dark{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .stat-label{font-size:14.5px;color:var(--muted);font-weight:600;margin-bottom:10px;}
+  .stat-card.dark .stat-label{color:#B9C8D4;}
+  .stat-value{font-size:34px;font-weight:800;line-height:1;}
+  .stat-hint{font-size:12.5px;color:#9FB2C2;margin-top:8px;}
+
+  .panel{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:var(--radius-lg);padding:18px 16px;margin-bottom:14px;
+  }
+  .pending-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .pending-title{font-weight:700;font-size:16px;margin-bottom:4px;}
+  .pending-sub{font-size:13.5px;color:var(--muted);}
+  .pending-num{font-size:26px;font-weight:800;color:var(--navy);}
+
+  /* New loan form */
+  .form-panel .form-head{display:flex;align-items:flex-start;gap:12px;margin-bottom:18px;}
+  .plus-badge{
+    width:34px;height:34px;border-radius:10px;background:#EEF2F5;
+    display:flex;align-items:center;justify-content:center;flex:none;color:var(--navy);
+  }
+  .form-title{font-size:19px;font-weight:800;margin:0 0 2px;}
+  .form-sub{font-size:13.5px;color:var(--muted);margin:0;}
+
+  label.field-label{display:block;font-weight:700;font-size:15px;margin:16px 0 8px;}
+  .cart-options{display:flex;gap:10px;}
+  .cart-option{
+    flex:1;border:1px solid var(--border);border-radius:var(--radius-md);
+    padding:14px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;
+    background:#fff;font-size:15.5px;font-weight:700;color:var(--text);
+    transition:border-color .15s, background .15s;
+  }
+  .cart-option .dot{
+    width:19px;height:19px;border-radius:50%;border:2px solid #C7D0D8;flex:none;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .cart-option.selected{border-color:var(--navy);background:#F5F8FA;}
+  .cart-option.selected .dot{border-color:var(--navy);}
+  .cart-option.selected .dot::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--navy);}
+
+  input[type=text], input[type=tel]{
+    width:100%;padding:15px 16px;border-radius:var(--radius-md);
+    border:1px solid var(--border);background:#fff;
+    font-size:16px;color:var(--text);outline:none;
+  }
+  input::placeholder{color:#9CACB9;}
+  input:focus{border-color:var(--navy);}
+
+  .divider-dashed{border:none;border-top:1.5px dashed var(--border);margin:22px 0 6px;}
+
+  .submit-btn{
+    width:100%;margin-top:20px;padding:16px;border:none;border-radius:var(--radius-md);
+    background:var(--navy);color:#fff;font-size:16.5px;font-weight:700;
+    display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;
+  }
+  .submit-btn:active{background:var(--navy-2);}
+  .submit-hint{text-align:center;color:var(--muted-2);font-size:13px;margin-top:12px;}
+
+  /* Movements panel */
+  .mv-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:4px;}
+  .mv-title{font-size:20px;font-weight:800;margin:0;}
+  .mv-sub{font-size:13.5px;color:var(--muted);margin:4px 0 16px;}
+  .icon-btn{
+    width:40px;height:40px;border-radius:10px;border:1px solid var(--border);
+    background:#fff;display:flex;align-items:center;justify-content:center;flex:none;
+    color:var(--navy);cursor:pointer;
+  }
+  .icon-btn svg{width:18px;height:18px;}
+  .icon-btn.spin svg{animation:spin .6s linear;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .tabs{
+    display:flex;background:#EDF1F4;border-radius:999px;padding:4px;margin-bottom:14px;gap:2px;
+  }
+  .tab{
+    flex:1;text-align:center;padding:10px 4px;border-radius:999px;font-weight:700;
+    font-size:14.5px;color:var(--muted);cursor:pointer;border:none;background:transparent;
+  }
+  .tab.active{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(16,39,58,0.12);}
+
+  .search-box{
+    display:flex;align-items:center;gap:10px;border:1px solid var(--border);
+    border-radius:var(--radius-md);padding:13px 15px;margin-bottom:6px;background:#fff;
+  }
+  .search-box svg{width:18px;height:18px;color:var(--muted);flex:none;}
+  .search-box input{border:none;outline:none;font-size:15.5px;width:100%;color:var(--text);background:transparent;}
+
+  .empty-state{text-align:center;padding:34px 10px 18px;}
+  .empty-icon{
+    width:96px;height:96px;border-radius:50%;background:#EEF2F5;margin:0 auto 18px;
+    display:flex;align-items:center;justify-content:center;color:#7C8FA0;
+  }
+  .empty-icon svg{width:38px;height:38px;}
+  .empty-title{font-size:19px;font-weight:800;margin:0 0 8px;}
+  .empty-sub{font-size:14.5px;color:var(--muted);line-height:1.45;max-width:320px;margin:0 auto;}
+
+  .list-footer{
+    display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted-2);
+    border-top:1px solid var(--border);padding-top:14px;margin-top:6px;
+  }
+
+  .record-list{display:flex;flex-direction:column;gap:10px;margin:6px 0 14px;}
+  .record{border:1px solid var(--border);border-radius:var(--radius-md);padding:13px 14px;}
+  .record-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;}
+  .record-cart{font-weight:800;font-size:15.5px;}
+  .badge{
+    font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .badge.waiting{background:#FBEEE0;color:#B4691B;}
+  .badge.done{background:var(--green-bg);color:var(--green);}
+  .record-meta{font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
+  .record-meta b{color:var(--text);font-weight:700;}
+  .return-btn{
+    width:100%;padding:11px;border-radius:10px;border:1px solid var(--navy);
+    background:#fff;color:var(--navy);font-weight:700;font-size:14px;cursor:pointer;
+  }
+  .return-btn:active{background:#F5F8FA;}
+  .day-header{font-size:12.5px;font-weight:700;color:var(--muted-2);letter-spacing:.4px;margin:14px 0 2px;}
+
+  .day-panel{background:#F5F7F9;border-radius:var(--radius-lg);padding:18px 16px;display:flex;gap:14px;}
+  .day-panel svg{width:22px;height:22px;color:var(--navy);flex:none;margin-top:2px;}
+  .day-panel-title{font-weight:800;font-size:16.5px;margin:0 0 8px;}
+  .day-panel-text{font-size:13.5px;color:var(--muted);line-height:1.5;margin:0 0 6px;}
+  .day-panel-meta{font-size:12.5px;color:var(--muted-2);margin:6px 0 14px;line-height:1.5;}
+  .download-btn{
+    display:inline-flex;align-items:center;gap:9px;background:#fff;border:1px solid var(--border);
+    border-radius:12px;padding:12px 18px;font-weight:700;font-size:14.5px;color:var(--text);cursor:pointer;
+  }
+
+  footer.app-footer{text-align:center;padding:20px 18px 6px;color:var(--muted-2);font-size:13px;line-height:1.6;}
+
+  .toast{
+    position:fixed;left:50%;bottom:26px;transform:translateX(-50%);
+    background:var(--navy);color:#fff;padding:13px 20px;border-radius:12px;
+    font-size:14.5px;font-weight:600;box-shadow:0 8px 24px rgba(16,39,58,0.35);
+    opacity:0;pointer-events:none;transition:opacity .25s, bottom .25s;z-index:50;max-width:88%;text-align:center;
+  }
+  .toast.show{opacity:1;bottom:calc(26px + env(safe-area-inset-bottom,0px));}
+
+  @media (max-width:380px){
+    h1.hero{font-size:25px;}
+    .stat-value{font-size:28px;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#E08D3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="20" r="1.4" fill="#E08D3C" stroke="none"/><circle cx="17" cy="20" r="1.4" fill="#E08D3C" stroke="none"/><path d="M2.5 3h2l2.2 11.1a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 2-1.6L20.5 7H6.1"/></svg>
+      </div>
+      <div>
+        <div class="brand-title">Controle de Carrinhos</div>
+        <div class="brand-sub">PORTARIA · EMPRÉSTIMOS</div>
+      </div>
+    </div>
+    <button class="install-btn" id="installBtn" title="Instalar aplicativo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M12 8v5M9.5 11 12 13.5 14.5 11"/><path d="M8 21h8"/></svg>
+    </button>
+  </header>
+
+  <main>
+    <div class="eyebrow">CONTROLE DA PORTARIA</div>
+    <h1 class="hero">Cada carrinho, uma devolução.</h1>
+    <p class="hero-sub">Registre a saída. Acompanhe até a volta.</p>
+
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-label">Empréstimos de hoje</div>
+        <div class="stat-value" id="statToday">0</div>
+      </div>
+      <div class="stat-card dark">
+        <div class="stat-label">Aguardando devolução</div>
+        <div class="stat-value" id="statWaiting">0</div>
+        <div class="stat-hint">Inclui todos os dias</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pending-row">
+        <div>
+          <div class="pending-title">Pendentes de dias anteriores</div>
+          <div class="pending-sub" id="pendingSub">Nenhuma pendência anterior confirmada</div>
+        </div>
+        <div class="pending-num" id="statPending">0</div>
+      </div>
+    </div>
+
+    <!-- New loan form -->
+    <form class="panel form-panel" id="loanForm">
+      <div class="form-head">
+        <div class="plus-badge">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div>
+          <div class="form-title">Novo empréstimo</div>
+          <p class="form-sub">Quem está levando o carrinho?</p>
+        </div>
+      </div>
+
+      <label class="field-label">Qual carrinho?</label>
+      <div class="cart-options" id="cartOptions">
+        <div class="cart-option" data-value="4 rodas"><span class="dot"></span>4 rodas</div>
+        <div class="cart-option" data-value="Plataforma"><span class="dot"></span>Plataforma</div>
+      </div>
+
+      <label class="field-label" for="entregador">Nome do entregador</label>
+      <input type="text" id="entregador" placeholder="Nome de quem está retirando" autocomplete="off" required />
+
+      <label class="field-label" for="destino">Destino da mercadoria</label>
+      <input type="text" id="destino" placeholder="Loja, setor ou local de entrega" autocomplete="off" required />
+
+      <label class="field-label" for="telefone">Telefone com DDD</label>
+      <input type="tel" id="telefone" placeholder="(81) 99999-9999" autocomplete="off" />
+
+      <hr class="divider-dashed" />
+
+      <label class="field-label" for="colaborador">Colaborador que emprestou</label>
+      <input type="text" id="colaborador" placeholder="Seu nome" autocomplete="off" required />
+
+      <button type="submit" class="submit-btn">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Registrar empréstimo
+      </button>
+      <p class="submit-hint">Data e hora são registradas automaticamente.</p>
+    </form>
+
+    <!-- Movements -->
+    <div class="panel">
+      <div class="mv-head">
+        <div>
+          <h2 class="mv-title">Movimentações</h2>
+          <p class="mv-sub">Do primeiro registro à devolução.</p>
+        </div>
+        <button class="icon-btn" id="refreshBtn" title="Atualizar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>
+        </button>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="hoje">Hoje</button>
+        <button class="tab" data-tab="pendentes">Pendentes</button>
+        <button class="tab" data-tab="historico">Histórico</button>
+      </div>
+
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar nome, empresa, destino ou carrinho" />
+      </div>
+
+      <div id="listArea"></div>
+
+      <div class="list-footer">
+        <span id="listCount">0 registros nesta lista</span>
+        <span>Atualização a cada 30 segundos</span>
+      </div>
+    </div>
+
+    <div class="day-panel">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 3 6v6c0 5 4 8.5 9 10 5-1.5 9-5 9-10V6l-9-4Z"/><path d="m9 12 2 2 4-4"/></svg>
+      <div>
+        <p class="day-panel-title">Histórico preservado, dia após dia</p>
+        <p class="day-panel-text" id="dayPanelText">Dados salvos neste aparelho e cópias por movimentação, organizadas por dia. A mudança de data nunca apaga empréstimos.</p>
+        <p class="day-panel-meta" id="lastCopyMeta">Última movimentação copiada: —</p>
+        <button class="download-btn" id="downloadBtn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0 4-4m-4 4-4-4"/><path d="M4 19h16"/></svg>
+          Baixar histórico
+        </button>
+      </div>
+    </div>
+
+    <div class="panel" id="configBanner" style="display:none;border-color:#F0C48A;background:#FFF8EE;">
+      <div class="pending-title" style="margin-bottom:6px;">Modo local (ainda não é online)</div>
+      <p class="pending-sub" style="margin:0;">Este aparelho está salvando os registros só nele. Para deixar visível em todos os aparelhos, configure o arquivo <code>firebase-config.js</code> com os dados do seu projeto Firebase. Veja o passo a passo no LEIA-PRIMEIRO.txt.</p>
+    </div>
+
+    <footer class="app-footer">
+      <span id="footerLine1">Portaria · Registros neste aparelho</span><br/>
+      <span id="footerLine2">Funciona sem internet depois de instalado.</span>
+    </footer>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>

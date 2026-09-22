@@ -1,0 +1,97 @@
+CONTROLE DE CARRINHOS — GUIA COMPLETO
+(GitHub Pages + Firebase online + PWABuilder)
+Funciona normalmente no Windows, Android e iOS — e so um site.
+
+===============================================================
+PARTE 1 - COLOCAR NO AR (GitHub Pages)
+===============================================================
+1. Extraia esta pasta (controle-carrinhos) no seu computador.
+2. Crie uma conta/repositorio novo no GitHub (ex.: controle-carrinhos).
+3. Envie TODOS os arquivos desta pasta para a raiz do repositorio:
+   index.html, app.js, manifest.json, service-worker.js,
+   firebase-config.js, .nojekyll, e a pasta icons/
+4. No repositorio, va em Settings > Pages, escolha a branch "main"
+   e a pasta "/ (root)". Salve.
+5. Aguarde alguns minutos. O site fica em:
+   https://SEU-USUARIO.github.io/controle-carrinhos/
+
+Nesse ponto o app ja funciona, mas no MODO LOCAL: cada aparelho
+guarda sua propria lista de registros. Pra ficar online de verdade
+(todo mundo vendo a mesma lista), siga a Parte 2.
+
+===============================================================
+PARTE 2 - DEIXAR ONLINE (Firebase, gratuito)
+===============================================================
+Isso so voce consegue fazer, porque exige login com sua conta Google.
+
+1. Acesse console.firebase.google.com (logado com seu Google).
+2. Clique em "Adicionar projeto", de um nome (ex.: controle-carrinhos)
+   e crie (pode desativar o Google Analytics, nao e necessario).
+3. No menu lateral esquerdo, clique em "Firestore Database" >
+   "Criar banco de dados".
+   - Escolha o modo "producao".
+   - Escolha uma regiao perto de voce (ex.: southamerica-east1).
+4. Va na aba "Regras" do Firestore e substitua o conteudo por isto
+   (deixa liberado pra ler/escrever sem exigir login de usuario;
+   da pra deixar mais restrito depois se quiser):
+
+   rules_version = '2';
+   service cloud.firestore {
+     match /databases/{database}/documents {
+       match /{document=**} {
+         allow read, write: if true;
+       }
+     }
+   }
+
+   Clique em "Publicar".
+
+5. Volte para a Visao Geral do projeto, clique no icone de
+   engrenagem (Configuracoes do projeto) > aba "Geral".
+6. Role ate "Seus apps" e clique no icone "</>" (Web).
+7. De um apelido ao app (ex.: "Controle de Carrinhos Web") e
+   clique em "Registrar app". NAO marque a opcao de Firebase Hosting.
+8. Vai aparecer um bloco de codigo parecido com este:
+
+   const firebaseConfig = {
+     apiKey: "AIzaSy...",
+     authDomain: "controle-carrinhos-xxxx.firebaseapp.com",
+     projectId: "controle-carrinhos-xxxx",
+     storageBucket: "controle-carrinhos-xxxx.appspot.com",
+     messagingSenderId: "123456789",
+     appId: "1:123456789:web:abcdef"
+   };
+
+9. Abra o arquivo "firebase-config.js" (desta pasta) num editor de
+   texto (Bloco de Notas serve) e troque cada "COLE_AQUI" pelo
+   valor correspondente que apareceu no passo 8. Salve o arquivo.
+
+10. Suba esse firebase-config.js atualizado para o mesmo
+    repositorio no GitHub (substituindo o antigo).
+
+11. Pronto! Recarregue o site do GitHub Pages - o aviso amarelo
+    "Modo local" vai sumir, e o rodape passa a dizer
+    "Portaria - Registros compartilhados". A partir dai, qualquer
+    pessoa que abrir o link ve e edita a MESMA lista, em tempo real.
+
+===============================================================
+PARTE 3 - VIRAR APP INSTALAVEL (PWABuilder)
+===============================================================
+1. Acesse https://www.pwabuilder.com
+2. Cole o link do seu GitHub Pages e clique em "Start".
+3. Depois de validar o manifest, use "Instalar" direto pelo
+   Chrome/Edge no computador (Windows) ou gere o pacote para
+   Android se quiser um instalador .apk.
+
+===============================================================
+OBSERVACOES
+===============================================================
+- "Baixar historico" exporta os registros da tela atual em CSV
+  (abre no Excel), tanto no modo local quanto no modo online.
+- No modo online, os dados ficam salvos na nuvem do Google
+  (Firestore), no plano gratuito (Spark) - da conta tranquilamente
+  do uso de uma portaria.
+- As regras do passo 4 deixam o banco aberto para qualquer pessoa
+  com o link escrever nele. Isso e aceitavel para um uso interno
+  simples, mas se quiser mais seguranca depois (por exemplo, exigir
+  uma senha), e so pedir que eu ajusto.
