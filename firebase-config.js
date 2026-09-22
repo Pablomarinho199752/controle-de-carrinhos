@@ -11,10 +11,10 @@
 // -------------------------------------------------------------
 
 window.FIREBASE_CONFIG = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI.firebaseapp.com",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI.appspot.com",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+  apiKey: "AIzaSyC3LKyKW8aAGYE5NkwbaF4nIZ_pr9Hpshw",
+  authDomain: "emprestimo-de-carro.firebaseapp.com",
+  projectId: "emprestimo-de-carro",
+  storageBucket: "emprestimo-de-carro.firebasestorage.app",
+  messagingSenderId: "663475042395",
+  appId: "1:663475042395:web:bf5d726fe20047aed9277e"
 };
