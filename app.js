@@ -178,6 +178,8 @@
     var destino = document.getElementById("destino").value.trim();
     var telefone = document.getElementById("telefone").value.trim();
     var colaborador = document.getElementById("colaborador").value.trim();
+    var quantidade = parseInt(document.getElementById("quantidade").value, 10);
+    if (!quantidade || quantidade < 1) quantidade = 1;
 
     if (!entregador || !destino || !colaborador) {
       showToast("Preencha os campos obrigatórios.");
@@ -186,6 +188,8 @@
 
     var record = {
       carrinho: selectedCart,
+      quantidade: quantidade,
+      quantidadeDevolvida: 0,
       entregador: entregador,
       destino: destino,
       telefone: telefone,
@@ -207,6 +211,7 @@
     }
 
     e.target.reset();
+    document.getElementById("quantidade").value = 1;
     selectedCart = null;
     Array.prototype.forEach.call(cartOptionsEl.children, function (c) {
       c.classList.remove("selected");
@@ -215,22 +220,43 @@
     showToast("Empréstimo registrado.");
   });
 
-  // ---------- return a cart ----------
-  function registerReturn(id) {
+  // ---------- return carts (supports partial returns) ----------
+  function registerReturn(id, qty) {
+    var rec = records.find(function (r) { return r.id === id; });
+    if (!rec) return;
+
+    var total = rec.quantidade || 1;
+    var jaDevolvido = rec.quantidadeDevolvida || 0;
+    var restante = total - jaDevolvido;
+
+    qty = parseInt(qty, 10);
+    if (!qty || qty < 1) qty = restante;
+    if (qty > restante) qty = restante;
+
+    var novaQtdDevolvida = jaDevolvido + qty;
+    var completo = novaQtdDevolvida >= total;
     var now = new Date().toISOString();
+
+    var updates = { quantidadeDevolvida: novaQtdDevolvida };
+    if (completo) updates.devolvidoEm = now;
+
     if (isOnline) {
-      db.collection(COLLECTION).doc(id).update({ devolvidoEm: now }).catch(function (err) {
+      db.collection(COLLECTION).doc(id).update(updates).catch(function (err) {
         console.error(err);
         showToast("Não foi possível registrar a devolução agora.");
       });
     } else {
-      var rec = records.find(function (r) { return r.id === id; });
-      if (!rec) return;
-      rec.devolvidoEm = now;
+      rec.quantidadeDevolvida = novaQtdDevolvida;
+      if (completo) rec.devolvidoEm = now;
       saveLocal();
       render();
     }
-    showToast("Devolução registrada.");
+
+    if (completo) {
+      showToast("Devolução concluída.");
+    } else {
+      showToast(qty + " carrinho(s) devolvido(s). Restam " + (total - novaQtdDevolvida) + ".");
+    }
   }
 
   // ---------- download history (CSV) ----------
@@ -239,17 +265,24 @@
       showToast("Ainda não há registros para baixar.");
       return;
     }
-    var header = ["Carrinho", "Entregador", "Destino", "Telefone", "Colaborador", "Saída", "Devolução", "Status"];
+    var header = ["Carrinho", "Quantidade", "Devolvidos", "Restam", "Entregador", "Destino", "Telefone", "Colaborador", "Saída", "Devolução concluída", "Status"];
     var rows = records.map(function (r) {
+      var total = r.quantidade || 1;
+      var devolvidos = r.quantidadeDevolvida || 0;
+      var restante = total - devolvidos;
+      var status = restante <= 0 ? "Devolvido" : (devolvidos > 0 ? "Parcial" : "Aguardando devolução");
       return [
         r.carrinho,
+        total,
+        devolvidos,
+        restante,
         r.entregador,
         r.destino,
         r.telefone || "",
         r.colaborador,
         fmtDateTime(r.saidaEm),
         r.devolvidoEm ? fmtDateTime(r.devolvidoEm) : "",
-        r.devolvidoEm ? "Devolvido" : "Aguardando devolução"
+        status
       ];
     });
     var csv = [header].concat(rows).map(function (row) {
@@ -298,25 +331,37 @@
   }
 
   function recordCard(r) {
-    var waiting = !r.devolvidoEm;
-    var badge = waiting
-      ? '<span class="badge waiting">Aguardando</span>'
-      : '<span class="badge done">Devolvido</span>';
+    var total = r.quantidade || 1;
+    var devolvidos = r.quantidadeDevolvida || 0;
+    var restante = total - devolvidos;
+    var completo = restante <= 0;
+
+    var badge = completo
+      ? '<span class="badge done">Devolvido</span>'
+      : (devolvidos > 0
+        ? '<span class="badge partial">Parcial</span>'
+        : '<span class="badge waiting">Aguardando</span>');
+
+    var qtyLabel = total > 1 ? (total + ' carrinhos') : '1 carrinho';
 
     var meta = '<b>' + escapeHtml(r.entregador) + '</b> · ' + escapeHtml(r.destino);
     if (r.telefone) meta += ' · ' + escapeHtml(r.telefone);
     meta += '<br/>Saída às ' + fmtTime(r.saidaEm) + ' — registrado por ' + escapeHtml(r.colaborador);
-    if (r.devolvidoEm) meta += '<br/>Devolvido às ' + fmtTime(r.devolvidoEm);
+    if (devolvidos > 0 && !completo) meta += '<br/>Devolvidos: ' + devolvidos + ' de ' + total + ' — restam ' + restante;
+    if (completo) meta += '<br/>Devolução concluída às ' + fmtTime(r.devolvidoEm);
 
-    var btn = waiting
-      ? '<button class="return-btn" data-id="' + r.id + '">Registrar devolução</button>'
-      : "";
+    var controls = completo
+      ? ""
+      : '<div class="return-row">' +
+          '<input type="number" class="return-qty" data-id="' + r.id + '" min="1" max="' + restante + '" value="' + restante + '" />' +
+          '<button class="return-btn" data-id="' + r.id + '">Registrar devolução</button>' +
+        '</div>';
 
     return (
       '<div class="record">' +
-      '<div class="record-top"><span class="record-cart">' + escapeHtml(r.carrinho) + '</span>' + badge + '</div>' +
+      '<div class="record-top"><span class="record-cart">' + escapeHtml(r.carrinho) + ' · ' + qtyLabel + '</span>' + badge + '</div>' +
       '<div class="record-meta">' + meta + '</div>' +
-      btn +
+      controls +
       '</div>'
     );
   }
@@ -331,17 +376,22 @@
     var listArea = document.getElementById("listArea");
     var list = getFiltered();
 
-    // stats
+    // stats (contam CARRINHOS, não apenas registros — um registro pode ter várias unidades)
     var todK = todayKey();
     var today = records.filter(function (r) { return todayKey(new Date(r.saidaEm)) === todK; });
-    var waiting = records.filter(function (r) { return !r.devolvidoEm; });
-    var pendingOld = waiting.filter(function (r) { return todayKey(new Date(r.saidaEm)) !== todK; });
+    var totalToday = today.reduce(function (sum, r) { return sum + (r.quantidade || 1); }, 0);
 
-    document.getElementById("statToday").textContent = today.length;
-    document.getElementById("statWaiting").textContent = waiting.length;
-    document.getElementById("statPending").textContent = pendingOld.length;
-    document.getElementById("pendingSub").textContent = pendingOld.length
-      ? pendingOld.length + " carrinho(s) de dias anteriores ainda não voltou(aram)"
+    var waitingRecords = records.filter(function (r) { return (r.quantidadeDevolvida || 0) < (r.quantidade || 1); });
+    var totalWaiting = waitingRecords.reduce(function (sum, r) { return sum + ((r.quantidade || 1) - (r.quantidadeDevolvida || 0)); }, 0);
+
+    var pendingOldRecords = waitingRecords.filter(function (r) { return todayKey(new Date(r.saidaEm)) !== todK; });
+    var totalPendingOld = pendingOldRecords.reduce(function (sum, r) { return sum + ((r.quantidade || 1) - (r.quantidadeDevolvida || 0)); }, 0);
+
+    document.getElementById("statToday").textContent = totalToday;
+    document.getElementById("statWaiting").textContent = totalWaiting;
+    document.getElementById("statPending").textContent = totalPendingOld;
+    document.getElementById("pendingSub").textContent = totalPendingOld
+      ? totalPendingOld + " carrinho(s) de dias anteriores ainda não voltou(aram)"
       : "Nenhuma pendência anterior confirmada";
 
     // list
@@ -378,7 +428,10 @@
 
     listArea.querySelectorAll(".return-btn").forEach(function (btn) {
       btn.addEventListener("click", function () {
-        registerReturn(btn.getAttribute("data-id"));
+        var id = btn.getAttribute("data-id");
+        var qtyInput = listArea.querySelector('.return-qty[data-id="' + id + '"]');
+        var qty = qtyInput ? parseInt(qtyInput.value, 10) : 1;
+        registerReturn(id, qty);
       });
     });
 

@@ -193,11 +193,17 @@
     font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap;
   }
   .badge.waiting{background:#FBEEE0;color:#B4691B;}
+  .badge.partial{background:#E8F0FE;color:#1D5FB0;}
   .badge.done{background:var(--green-bg);color:var(--green);}
   .record-meta{font-size:13.5px;color:var(--muted);line-height:1.5;margin-bottom:8px;}
   .record-meta b{color:var(--text);font-weight:700;}
+  .return-row{display:flex;gap:8px;align-items:stretch;}
+  .return-qty{
+    width:66px;flex:none;padding:0 8px;border-radius:10px;border:1px solid var(--border);
+    text-align:center;font-size:15px;font-weight:700;color:var(--text);
+  }
   .return-btn{
-    width:100%;padding:11px;border-radius:10px;border:1px solid var(--navy);
+    flex:1;padding:11px;border-radius:10px;border:1px solid var(--navy);
     background:#fff;color:var(--navy);font-weight:700;font-size:14px;cursor:pointer;
   }
   .return-btn:active{background:#F5F8FA;}
@@ -227,6 +233,25 @@
     h1.hero{font-size:25px;}
     .stat-value{font-size:28px;}
   }
+
+  /* Desktop / tablet: expand and use two columns instead of a narrow phone-width strip */
+  @media (min-width:900px){
+    .wrap{max-width:1180px;}
+    header.app-header{padding-left:34px;padding-right:34px;}
+    main{
+      padding:30px 34px 0;
+      display:grid;
+      grid-template-columns:minmax(360px,440px) 1fr;
+      gap:26px;
+      align-items:start;
+    }
+    .col-left{position:sticky;top:22px;}
+    h1.hero{font-size:32px;}
+    footer.app-footer{grid-column:1 / -1;}
+  }
+  @media (min-width:1180px){
+    .wrap{max-width:1320px;}
+  }
 </style>
 </head>
 <body>
@@ -248,6 +273,7 @@
   </header>
 
   <main>
+   <div class="col-left">
     <div class="eyebrow">CONTROLE DA PORTARIA</div>
     <h1 class="hero">Cada carrinho, uma devolução.</h1>
     <p class="hero-sub">Registre a saída. Acompanhe até a volta.</p>
@@ -292,6 +318,9 @@
         <div class="cart-option" data-value="Plataforma"><span class="dot"></span>Plataforma</div>
       </div>
 
+      <label class="field-label" for="quantidade">Quantidade de carrinhos</label>
+      <input type="number" id="quantidade" min="1" step="1" value="1" inputmode="numeric" />
+
       <label class="field-label" for="entregador">Nome do entregador</label>
       <input type="text" id="entregador" placeholder="Nome de quem está retirando" autocomplete="off" required />
 
@@ -312,7 +341,9 @@
       </button>
       <p class="submit-hint">Data e hora são registradas automaticamente.</p>
     </form>
+   </div>
 
+   <div class="col-right">
     <!-- Movements -->
     <div class="panel">
       <div class="mv-head">
@@ -361,6 +392,7 @@
       <div class="pending-title" style="margin-bottom:6px;">Modo local (ainda não é online)</div>
       <p class="pending-sub" style="margin:0;">Este aparelho está salvando os registros só nele. Para deixar visível em todos os aparelhos, configure o arquivo <code>firebase-config.js</code> com os dados do seu projeto Firebase. Veja o passo a passo no LEIA-PRIMEIRO.txt.</p>
     </div>
+   </div>
 
     <footer class="app-footer">
       <span id="footerLine1">Portaria · Registros neste aparelho</span><br/>
