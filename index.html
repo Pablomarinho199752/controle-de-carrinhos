@@ -236,22 +236,55 @@
 
   /* Desktop / tablet: expand and use two columns instead of a narrow phone-width strip */
   @media (min-width:900px){
-    .wrap{max-width:1180px;}
-    header.app-header{padding-left:34px;padding-right:34px;}
-    main{
-      padding:30px 34px 0;
-      display:grid;
-      grid-template-columns:minmax(360px,440px) 1fr;
-      gap:26px;
-      align-items:start;
-    }
-    .col-left{position:sticky;top:22px;}
-    h1.hero{font-size:32px;}
-    footer.app-footer{grid-column:1 / -1;}
+  .wrap{
+    width:100%;
+    max-width:none;
   }
-  @media (min-width:1180px){
-    .wrap{max-width:1320px;}
+
+  header.app-header{
+    padding-left:42px;
+    padding-right:42px;
   }
+
+  main{
+    width:100%;
+    padding:32px 42px 0;
+    display:grid;
+    grid-template-columns:minmax(420px, 0.9fr) minmax(0, 1.5fr);
+    gap:32px;
+    align-items:start;
+  }
+
+  .col-left{
+    position:sticky;
+    top:22px;
+  }
+
+  h1.hero{
+    font-size:36px;
+  }
+
+  .panel{
+    padding:22px 20px;
+  }
+
+  input[type=text],
+  input[type=tel],
+  input[type=number]{
+    font-size:17px;
+  }
+
+  footer.app-footer{
+    grid-column:1 / -1;
+  }
+}
+
+@media (min-width:1180px){
+  .wrap{
+    width:100%;
+    max-width:none;
+  }
+}
 </style>
 </head>
 <body>
