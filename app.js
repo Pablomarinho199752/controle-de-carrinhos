@@ -1,3 +1,4 @@
+
 (function () {
   "use strict";
 
@@ -18,44 +19,57 @@
     var c = window.FIREBASE_CONFIG;
     return !!(c && c.apiKey && c.apiKey.indexOf("COLE_AQUI") === -1 && c.projectId && c.projectId.indexOf("COLE_AQUI") === -1);
   }
+function initStorage() {
+  if (firebaseConfigured() && window.firebase) {
+    try {
+      firebase.initializeApp(window.FIREBASE_CONFIG);
 
-  function initStorage() {
-    if (firebaseConfigured() && window.firebase) {
-      try {
-        firebase.initializeApp(window.FIREBASE_CONFIG);
-        db = firebase.firestore();
-        isOnline = true;
-      } catch (e) {
-        console.error("Falha ao iniciar Firebase, usando modo local.", e);
-        isOnline = false;
-      }
-    }
-    applyModeUI();
+      firebase.auth().signInAnonymously()
+        .then(function () {
+          db = firebase.firestore();
+          isOnline = true;
+          applyModeUI();
 
-    if (isOnline) {
-      db.collection(COLLECTION).orderBy("saidaEm", "desc").onSnapshot(
-        function (snapshot) {
-          records = snapshot.docs.map(function (d) {
-            var data = d.data();
-            data.id = d.id;
-            return data;
-          });
-          localStorage.setItem(LAST_COPY_KEY, new Date().toISOString());
-          render();
-        },
-        function (err) {
-          console.error("Erro ao ler Firestore, caindo para modo local.", err);
+          db.collection(COLLECTION).orderBy("saidaEm", "desc").onSnapshot(
+            function (snapshot) {
+              records = snapshot.docs.map(function (d) {
+                var data = d.data();
+                data.id = d.id;
+                return data;
+              });
+
+              localStorage.setItem(LAST_COPY_KEY, new Date().toISOString());
+              render();
+            },
+            function (err) {
+              console.error("Erro ao ler Firestore.", err);
+              isOnline = false;
+              applyModeUI();
+              records = loadLocal();
+              render();
+            }
+          );
+        })
+        .catch(function (err) {
+          console.error("Falha na autenticação anônima.", err);
           isOnline = false;
           applyModeUI();
           records = loadLocal();
           render();
-        }
-      );
-    } else {
-      records = loadLocal();
-      render();
+        });
+
+      return;
+    } catch (e) {
+      console.error("Falha ao iniciar Firebase.", e);
     }
   }
+
+  isOnline = false;
+  applyModeUI();
+  records = loadLocal();
+  render();
+}
+  
 
   function applyModeUI() {
     var banner = document.getElementById("configBanner");
@@ -468,3 +482,6 @@
 
   initStorage();
 })();
+
+  
+ 
