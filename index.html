@@ -231,14 +231,50 @@
     border-top:1px solid #EDF1F4;padding-top:11px;font-size:15.5px;line-height:1.5;color:#5A6F80;
   }
   .record-secondary strong{color:var(--text);font-weight:800;}
-  .return-row{display:flex;gap:8px;align-items:stretch;}
-  .return-qty{
-    width:66px;flex:none;padding:0 8px;border-radius:10px;border:1px solid var(--border);
-    text-align:center;font-size:15px;font-weight:700;color:var(--text);
+  /* Devolução: quantidade em cima e botão logo abaixo, sempre centralizados.
+     O !important aqui é intencional para vencer a regra global input[type=number]{width:100%}. */
+  .record .return-row{
+    display:flex !important;
+    flex-direction:column !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:10px !important;
+    width:100% !important;
+    margin-top:10px !important;
+    padding-top:12px !important;
+    border-top:1px solid #EDF1F4 !important;
   }
-  .return-btn{
-    flex:1;padding:11px;border-radius:10px;border:1px solid var(--navy);
-    background:#fff;color:var(--navy);font-weight:700;font-size:14px;cursor:pointer;
+  .record .return-row input.return-qty{
+    width:72px !important;
+    min-width:72px !important;
+    max-width:72px !important;
+    height:44px !important;
+    flex:0 0 44px !important;
+    padding:0 8px !important;
+    margin:0 auto !important;
+    border-radius:11px !important;
+    border:1px solid var(--border) !important;
+    text-align:center !important;
+    font-size:17px !important;
+    font-weight:800 !important;
+    color:var(--text) !important;
+    background:#fff !important;
+    box-sizing:border-box !important;
+  }
+  .record .return-row button.return-btn{
+    display:block !important;
+    width:220px !important;
+    max-width:100% !important;
+    flex:none !important;
+    margin:0 auto !important;
+    padding:12px 16px !important;
+    border-radius:11px !important;
+    border:1px solid var(--navy) !important;
+    background:#fff !important;
+    color:var(--navy) !important;
+    font-weight:800 !important;
+    font-size:15px !important;
+    cursor:pointer !important;
   }
   .return-btn:active{background:#F5F8FA;}
   .day-header{font-size:12.5px;font-weight:700;color:var(--muted-2);letter-spacing:.4px;margin:14px 0 2px;}
@@ -331,6 +367,7 @@
 </style>
 </head>
 <body>
+<!-- Controle de Carrinhos UI v4: correção do bloco de devolução -->
 <div class="wrap">
 
   <header class="app-header">
@@ -490,7 +527,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
 <script src="firebase-config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=4"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
