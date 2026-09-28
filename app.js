@@ -7,7 +7,9 @@
   var COLLECTION = "registros";
 
   var cartOptionsEl = document.getElementById("cartOptions");
+  var dockOptionsEl = document.getElementById("dockOptions");
   var selectedCart = null;
+  var selectedDock = null;
   var activeTab = "hoje";
   var searchTerm = "";
   var records = [];
@@ -155,6 +157,17 @@ function initStorage() {
     selectedCart = opt.getAttribute("data-value");
   });
 
+  // ---------- dock selection ----------
+  dockOptionsEl.addEventListener("click", function (e) {
+    var opt = e.target.closest(".dock-option");
+    if (!opt) return;
+    Array.prototype.forEach.call(dockOptionsEl.children, function (c) {
+      c.classList.remove("selected");
+    });
+    opt.classList.add("selected");
+    selectedDock = opt.getAttribute("data-value");
+  });
+
   // ---------- tabs ----------
   document.querySelectorAll(".tab").forEach(function (btn) {
     btn.addEventListener("click", function () {
@@ -188,6 +201,10 @@ function initStorage() {
       showToast("Selecione qual carrinho está saindo.");
       return;
     }
+    if (!selectedDock) {
+      showToast("Selecione a doca que está emprestando.");
+      return;
+    }
     var entregador = document.getElementById("entregador").value.trim();
     var destino = document.getElementById("destino").value.trim();
     var telefone = document.getElementById("telefone").value.trim();
@@ -202,6 +219,7 @@ function initStorage() {
 
     var record = {
       carrinho: selectedCart,
+      doca: selectedDock,
       quantidade: quantidade,
       quantidadeDevolvida: 0,
       entregador: entregador,
@@ -227,7 +245,11 @@ function initStorage() {
     e.target.reset();
     document.getElementById("quantidade").value = 1;
     selectedCart = null;
+    selectedDock = null;
     Array.prototype.forEach.call(cartOptionsEl.children, function (c) {
+      c.classList.remove("selected");
+    });
+    Array.prototype.forEach.call(dockOptionsEl.children, function (c) {
       c.classList.remove("selected");
     });
 
@@ -279,7 +301,7 @@ function initStorage() {
       showToast("Ainda não há registros para baixar.");
       return;
     }
-    var header = ["Carrinho", "Quantidade", "Devolvidos", "Restam", "Entregador", "Destino", "Telefone", "Colaborador", "Saída", "Devolução concluída", "Status"];
+    var header = ["Carrinho", "Doca", "Quantidade", "Devolvidos", "Restam", "Entregador", "Destino", "Telefone", "Colaborador", "Saída", "Devolução concluída", "Status"];
     var rows = records.map(function (r) {
       var total = r.quantidade || 1;
       var devolvidos = r.quantidadeDevolvida || 0;
@@ -287,6 +309,7 @@ function initStorage() {
       var status = restante <= 0 ? "Devolvido" : (devolvidos > 0 ? "Parcial" : "Aguardando devolução");
       return [
         r.carrinho,
+        r.doca || "Não informada",
         total,
         devolvidos,
         restante,
@@ -335,7 +358,9 @@ function initStorage() {
 
     if (searchTerm) {
       list = list.filter(function (r) {
-        return (r.entregador + " " + r.destino + " " + r.carrinho + " " + r.colaborador)
+        return ([r.entregador, r.destino, r.telefone, r.doca, r.carrinho, r.colaborador]
+          .filter(Boolean)
+          .join(" "))
           .toLowerCase()
           .indexOf(searchTerm) !== -1;
       });
@@ -358,11 +383,19 @@ function initStorage() {
 
     var qtyLabel = total > 1 ? (total + ' carrinhos') : '1 carrinho';
 
-    var meta = '<b>' + escapeHtml(r.entregador) + '</b> · ' + escapeHtml(r.destino);
-    if (r.telefone) meta += ' · ' + escapeHtml(r.telefone);
-    meta += '<br/>Saída às ' + fmtTime(r.saidaEm) + ' — registrado por ' + escapeHtml(r.colaborador);
-    if (devolvidos > 0 && !completo) meta += '<br/>Devolvidos: ' + devolvidos + ' de ' + total + ' — restam ' + restante;
-    if (completo) meta += '<br/>Devolução concluída às ' + fmtTime(r.devolvidoEm);
+    var dockLabel = r.doca || "Doca não informada";
+    var phoneLabel = r.telefone || "Não informado";
+    var meta =
+      '<div class="record-info-grid">' +
+        '<div class="record-info"><span class="record-label">Entregador</span><span class="record-value">' + escapeHtml(r.entregador) + '</span></div>' +
+        '<div class="record-info"><span class="record-label">Destino / Loja</span><span class="record-value">' + escapeHtml(r.destino) + '</span></div>' +
+        '<div class="record-info"><span class="record-label">Telefone</span><span class="record-value">' + escapeHtml(phoneLabel) + '</span></div>' +
+        '<div class="record-info"><span class="record-label">Doca</span><span class="record-dock">' + escapeHtml(dockLabel) + '</span></div>' +
+      '</div>' +
+      '<div class="record-secondary">Saída às <strong>' + fmtTime(r.saidaEm) + '</strong> · Emprestado por <strong>' + escapeHtml(r.colaborador) + '</strong>';
+    if (devolvidos > 0 && !completo) meta += '<br/>Devolvidos: <strong>' + devolvidos + ' de ' + total + '</strong> · Restam <strong>' + restante + '</strong>';
+    if (completo) meta += '<br/>Devolução concluída às <strong>' + fmtTime(r.devolvidoEm) + '</strong>';
+    meta += '</div>';
 
     var controls = completo
       ? ""
