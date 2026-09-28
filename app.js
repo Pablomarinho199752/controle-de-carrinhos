@@ -399,9 +399,9 @@ function initStorage() {
 
     var controls = completo
       ? ""
-      : '<div class="return-row">' +
-          '<input type="number" class="return-qty" data-id="' + r.id + '" min="1" max="' + restante + '" value="' + restante + '" />' +
-          '<button class="return-btn" data-id="' + r.id + '">Registrar devolução</button>' +
+      : '<div class="return-row" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid #EDF1F4;">' +
+          '<input type="number" class="return-qty" data-id="' + r.id + '" min="1" max="' + restante + '" value="' + restante + '" style="width:72px;height:44px;flex:none;text-align:center;font-size:17px;font-weight:800;" />' +
+          '<button class="return-btn" data-id="' + r.id + '" style="display:block;width:220px;max-width:100%;flex:none;margin:0 auto;">Registrar devolução</button>' +
         '</div>';
 
     return (
