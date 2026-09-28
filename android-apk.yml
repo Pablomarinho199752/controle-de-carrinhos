@@ -1,0 +1,64 @@
+name: Gerar APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Baixar repositório
+        uses: actions/checkout@v6
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Configurar Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Preparar arquivos web
+        run: npm run prepare:web
+
+      - name: Criar projeto Android se ainda não existir
+        shell: bash
+        run: |
+          if [ ! -d android ]; then
+            npx cap add android
+          fi
+
+      - name: Sincronizar Capacitor
+        run: npx cap sync android
+
+      - name: Gerar ícones e splash Android
+        run: npx @capacitor/assets generate --android --iconBackgroundColor '#10273A' --iconBackgroundColorDark '#10273A' --splashBackgroundColor '#10273A' --splashBackgroundColorDark '#10273A'
+
+      - name: Tornar Gradle executável
+        run: chmod +x android/gradlew
+
+      - name: Compilar APK de teste
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Publicar APK como artefato
+        uses: actions/upload-artifact@v4
+        with:
+          name: Controle-de-Carrinhos-Android
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14

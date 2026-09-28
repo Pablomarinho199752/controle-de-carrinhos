@@ -1,0 +1,20 @@
+{
+  "name": "controle-de-carrinhos-native",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Empacotamento nativo Android do Controle de Carrinhos",
+  "scripts": {
+    "prepare:web": "node scripts/prepare-web.mjs",
+    "android:add": "npx cap add android",
+    "android:sync": "npm run prepare:web && npx cap sync android",
+    "android:assets": "npx @capacitor/assets generate --android --iconBackgroundColor '#10273A' --iconBackgroundColorDark '#10273A' --splashBackgroundColor '#10273A' --splashBackgroundColorDark '#10273A'"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.0.0"
+  }
+}
