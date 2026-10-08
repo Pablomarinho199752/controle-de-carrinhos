@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="description" content="Curso autoral de programação do zero ao avançado, em português, com prática integrada." />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="assets/icon-192.svg" />
+  <link rel="apple-touch-icon" href="assets/icon-192.svg" />
+  <link rel="stylesheet" href="styles.css" />
+  <title>Código Zero → Avançado — Edição Completa 2.0</title>
+  <link rel="stylesheet" href="pro.css" />
+</head>
+<body>
+  <div id="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="logo">&lt;/&gt;</div>
+        <div>
+          <strong>Código Zero</strong>
+          <span>do zero ao avançado</span>
+        </div>
+      </div>
+      <div class="overall">
+        <div class="overall-row"><span>Progresso</span><strong id="overallPct">0%</strong></div>
+        <div class="bar"><div id="overallBar" class="bar-fill"></div></div>
+      </div>
+      <input id="lessonSearch" class="lesson-search" type="search" placeholder="Buscar aula ou módulo..." aria-label="Buscar aula ou módulo" />
+      <nav id="moduleList" class="module-list" aria-label="Módulos"></nav>
+      <div class="sidebar-actions">
+        <button id="exportBtn" class="ghost">Exportar progresso</button>
+        <label class="ghost file-btn">Importar progresso<input id="importInput" type="file" accept="application/json" hidden></label>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="menuBtn" class="icon-btn" aria-label="Abrir menu">☰</button>
+        <div>
+          <div id="crumb" class="crumb">Módulo 0</div>
+          <h1 id="lessonTitle">Pensamento computacional</h1>
+        </div>
+        <div class="top-actions">
+          <button id="fontDownBtn" class="icon-btn text-size-btn" aria-label="Diminuir texto">A−</button>
+          <button id="fontUpBtn" class="icon-btn text-size-btn" aria-label="Aumentar texto">A+</button>
+          <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">◐</button>
+        </div>
+      </header>
+
+      <section class="hero-card">
+        <div>
+          <span id="lessonBadge" class="badge">Iniciante</span>
+          <p id="lessonSummary"></p>
+        </div>
+        <button id="completeBtn" class="primary">Marcar como concluída</button>
+      </section>
+
+      <div class="tabs" role="tablist">
+        <button class="tab active" data-tab="lesson">Aula</button>
+        <button class="tab" data-tab="practice">Prática</button>
+        <button class="tab" data-tab="quiz">Quiz</button>
+        <button class="tab" data-tab="math">Matemática sem medo</button>
+        <button class="tab" data-tab="notes">Notas</button>
+      </div>
+
+      <section id="lessonPanel" class="panel active"></section>
+
+      <section id="practicePanel" class="panel">
+        <div class="practice-head">
+          <div>
+            <h2 id="challengeTitle">Laboratório</h2>
+            <p id="challengePrompt"></p>
+          </div>
+          <span id="langBadge" class="lang-badge">Pseudocódigo</span>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="codeEditor" spellcheck="false" aria-label="Editor de código"></textarea>
+        </div>
+        <div class="practice-actions">
+          <button id="runBtn" class="primary">Executar / verificar</button>
+          <button id="resetCodeBtn" class="ghost">Restaurar código</button>
+          <button id="hintBtn" class="ghost">Dica</button>
+        </div>
+        <pre id="output" class="output">Seu resultado aparecerá aqui.</pre>
+        <div id="preview" class="preview-wrap"></div>
+      </section>
+
+      <section id="quizPanel" class="panel"></section>
+
+      <section id="mathPanel" class="panel"></section>
+
+      <section id="notesPanel" class="panel">
+        <h2>Minhas notas</h2>
+        <p>Ficam salvas neste aparelho.</p>
+        <textarea id="notesArea" class="notes" placeholder="Escreva o que você entendeu, dúvidas, exemplos do seu trabalho etc."></textarea>
+      </section>
+
+      <footer class="lesson-nav">
+        <button id="prevBtn" class="ghost">← Anterior</button>
+        <button id="nextBtn" class="primary">Próxima →</button>
+      </footer>
+    </main>
+  </div>
+
+  <script src="bootstrap.js"></script>
+</body>
+</html>
