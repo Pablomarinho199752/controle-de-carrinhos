@@ -1,5 +1,5 @@
-const CACHE='codigo-zero-v2-pages-4';
-const ASSETS=["./","./index.html","./styles.css","./pro.css","./bootstrap.js","./manifest.webmanifest","./assets/icon-192.svg","./assets/icon-512.svg","./payload/code-00.txt","./payload/code-01.txt","./payload/code-02.txt","./payload/code-03.txt","./payload/code-04.txt","./payload/code-05.txt","./payload/code-06.txt","./payload/code-07.txt"];
+const CACHE='codigo-zero-v2-firebase-appcheck-1';
+const ASSETS=["./","./index.html","./styles.css","./pro.css","./bootstrap.js","./firebase-tutor-setup.js","./manifest.webmanifest","./assets/icon-192.svg","./assets/icon-512.svg","./payload/code-00.txt","./payload/code-01.txt","./payload/code-02.txt","./payload/code-03.txt","./payload/code-04.txt","./payload/code-05.txt","./payload/code-06.txt","./payload/code-07.txt"];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));});
 self.addEventListener('activate',e=>e.waitUntil(Promise.all([self.clients.claim(),caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k))))])));
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{if(new URL(e.request.url).origin===location.origin){const copy=res.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));}return res;}).catch(()=>caches.match('./index.html'))));});
