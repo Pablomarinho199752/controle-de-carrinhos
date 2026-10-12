@@ -1,0 +1,48 @@
+{
+  "name": "controle-de-carrinhos-desktop",
+  "version": "1.0.0",
+  "description": "Aplicativo Windows Controle de Carrinhos",
+  "private": true,
+  "main": "main.cjs",
+  "scripts": {
+    "prepare": "node prepare.cjs",
+    "dist": "npm run prepare && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "electron": "^36.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "br.com.controlecarrinhos.desktop",
+    "productName": "Controle de Carrinhos",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "prepare.cjs",
+      "web/**/*",
+      "app.ico",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "app.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Controle de Carrinhos"
+    },
+    "artifactName": "ControleDeCarrinhos-Setup-${version}.${ext}"
+  }
+}
