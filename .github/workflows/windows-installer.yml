@@ -1,0 +1,50 @@
+name: Gerar instalador Windows
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "desktop/**"
+      - "index.html"
+      - "app.js"
+      - "firebase-config.js"
+      - "manifest.json"
+      - "service-worker.js"
+      - "icon-192.png"
+      - "icon-512.png"
+      - "icon-512-maskable.png"
+      - "favicon.png"
+      - "Carrinho-Azul-Corrigido.ico"
+      - ".github/workflows/windows-installer.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Baixar código do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependências
+        working-directory: desktop
+        run: npm install --no-audit --no-fund
+
+      - name: Criar instalador
+        working-directory: desktop
+        run: npm run dist
+
+      - name: Disponibilizar instalador para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: ControleDeCarrinhos-Setup-Windows
+          path: desktop/release/ControleDeCarrinhos-Setup-*.exe
+          if-no-files-found: error
+          retention-days: 30
